@@ -1,0 +1,4 @@
+cell,cluster,start_utc,end_utc,nodes_per_job,repeats,cooldown_s,job_sleep_s,first_job_id,last_job_id
+pilot-c7i-1n,coldstart-pc,2026-09-19T21:34:23Z,2026-09-19T23:02:35Z,1,10,30.0,30,4,13
+pilot-c7i-4n,coldstart-pc,2026-09-19T23:39:10Z,2026-09-20T01:03:37Z,4,10,30.0,30,15,24
+warm-c7i-1n,coldstart-pc,2026-09-20T01:03:59Z,2026-09-20T01:07:01Z,1,5,5.0,30,25,29

@@ -1,0 +1,5 @@
+scope,n,median,median_ci_lo,median_ci_hi,p95,p95_ci_lo,p95_ci_hi,mean,min,max,n_jobs,median_ci_lo_job_resample,median_ci_hi_job_resample
+"pilot-c7i-1n + pilot-c7i-4n pooled, node-level",50,75.32,72.02,83.21,101.59,97.4,108.06,79.37,50.55,109.83,20,71.17,91.45
+"same rows, node clock: cloud_final_start -> agent slurmd_active",50,74.48,70.93,81.89,100.59,96.03,106.6,78.29,50.0,108.88,,,
+pilot-c7i-1n,10,96.44,94.13,103.52,108.06,97.4,109.83,97.8,85.6,109.83,,,
+pilot-c7i-4n,40,72.08,71.17,75.37,98.3,90.91,99.23,74.76,50.55,99.23,,,

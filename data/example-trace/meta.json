@@ -1,0 +1,44 @@
+{
+  "cell": "pilot-c7i-1n",
+  "rep": 5,
+  "job_id": "9",
+  "node": "c7i-dy-c7i-large-1",
+  "selection": "repeat whose phases (d01,d12,d23,d34,d45,d57,total) are jointly closest to the cell medians",
+  "cell_medians_s": {
+    "d01": 29.97,
+    "d12": 1.74,
+    "d23": 3.0,
+    "d34": 63.96,
+    "d45": 96.44,
+    "total": 209.19,
+    "d57": 14.51
+  },
+  "window_utc": [
+    "2026-09-19T22:21:10.200Z",
+    "2026-09-19T22:29:13.000Z"
+  ],
+  "t0_utc": "2026-09-19T22:21:12.000Z",
+  "events": 135,
+  "events_by_source": {
+    "cloudtrail": 2,
+    "clustermgtd": 75,
+    "eventbridge": 4,
+    "harness": 1,
+    "job_output": 1,
+    "node_agent": 9,
+    "poller": 7,
+    "slurm_resume": 19,
+    "slurm_suspend": 5,
+    "slurmctld": 12
+  },
+  "dropped": {
+    "poller_other_nodes": 0,
+    "poller_duplicate_snapshots": 0
+  },
+  "anonymization": "consistent pseudonyms: account ids, instance/AMI/subnet/VPC/SG/LT/fleet/ENI/volume/snapshot ids, hosted-zone ids, UUIDs (request ids), Slurm SLUIDs, private and public IPs (and ip-a-b-c-d hostnames), MACs, personal names. The mapping is not saved. Timestamps, node names, cluster name, instance type, AZ, and software versions are kept.",
+  "caveats": [
+    "t0 for this cell was synthesized from squeue (notes=acct_synthesized_from_squeue)",
+    "job_output event uses the driver's done_ts; the file itself has no timestamp",
+    "boot_stage(derived) rows expand timestamps inside one agent_boot_stages record"
+  ]
+}

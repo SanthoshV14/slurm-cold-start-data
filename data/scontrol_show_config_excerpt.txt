@@ -1,0 +1,15 @@
+# Verbatim from the Kiro session (user-pasted terminal, coldstart-pc head node, 2026-09-19 ~20:20Z, before any cell).
+# Only this grep'd subset was ever captured; a full `scontrol show config` was never saved.
+$ scontrol show config | grep -iE 'SuspendTime|ResumeProgram|ResumeTimeout|SuspendProgram|SlurmctldParameters'
+ResumeProgram           = /opt/parallelcluster/scripts/slurm/slurm_resume
+ResumeTimeout           = 2100 sec
+SlurmctldParameters     = idle_on_node_suspend,power_save_min_interval=30,node_reg_mem_percent=75,enable_expedited_requeue
+SuspendProgram          = /opt/parallelcluster/scripts/slurm/slurm_suspend
+SuspendTime             = 180 sec
+SuspendTimeout          = 120 sec
+
+# Also captured: `scontrol show config | grep -iE "AccountingStorageType|JobAcctGatherType|MinJobAge|JobCompType"` (no slurmdbd)
+# and SlurmctldParameters after each `scontrol reconfigure`.
+# The static config files are saved verbatim in data/pc/headnode-logs/opt/slurm/etc/
+#   (slurm.conf, slurm_parallelcluster.conf, pcluster/slurm_parallelcluster_c7i_partition.conf), copied 2026-09-20 ~01:29Z
+#   = defaults state (power_save_min_interval=30).

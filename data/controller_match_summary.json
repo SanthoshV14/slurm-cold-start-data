@@ -1,0 +1,50 @@
+{
+ "definition": "A cold (job,node) timeline row MATCHES if the instance_id the harness joined to that Slurm node (via private IP) appears on a slurmctld.log line 'POWER: Node <node>/.../<ip> powered up with instance_id=<id>' with the SAME node name. Denominator = cold rows whose instance appears in the saved slurmctld.log (log coverage). Timing agreement is reported separately: t5 (poller) - slurmctld 'powered up' time, and t2 (CloudTrail CreateFleet) - slurm_resume.log 'Launched' line (1 s log resolution).",
+ "by_cell": [
+  {
+   "cell": "pilot-c7i-1n",
+   "cold_rows": 10,
+   "rows_in_log_coverage": 10,
+   "numerator_node_match": 10,
+   "denominator": 10,
+   "match_rate": 1.0,
+   "t5_minus_ctld_s": {
+    "n": 10,
+    "median": 0.7148103713989258,
+    "min": 0.06013679504394531,
+    "max": 0.8688998222351074
+   },
+   "t2_minus_resume_s": {
+    "n": 10,
+    "median": 0.0,
+    "min": -1.0,
+    "max": 0.0
+   }
+  },
+  {
+   "cell": "pilot-c7i-4n",
+   "cold_rows": 40,
+   "rows_in_log_coverage": 40,
+   "numerator_node_match": 40,
+   "denominator": 40,
+   "match_rate": 1.0,
+   "t5_minus_ctld_s": {
+    "n": 40,
+    "median": 0.5878990888595581,
+    "min": 0.011991500854492188,
+    "max": 0.9881479740142822
+   },
+   "t2_minus_resume_s": {
+    "n": 40,
+    "median": -0.5,
+    "min": -1.0,
+    "max": 0.0
+   }
+  }
+ ],
+ "overall": {
+  "numerator": 50,
+  "denominator": 50,
+  "cold_rows_total": 50
+ }
+}

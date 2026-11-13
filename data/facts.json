@@ -1,0 +1,149 @@
+{
+ "poller_interval": {
+  "answer": "1 s (neither 2 s nor 5 s)",
+  "evidence": [
+   "harness/run_cell.sh: `python3 -m coldstart.poller ... --interval 1`",
+   "data/pc/runs/phase4-remaining.log: 'polling every 1.0s'",
+   "poller.jsonl in every cell: minimum gap between distinct event timestamps = 1.000 s (it logs transitions only, so the median gap is larger)"
+  ],
+  "other_intervals": "driver.py checks power-down every 5 s and job completion every 2 s; neither of these produces timestamps"
+ },
+ "os_boot_complete": {
+  "answer": "t4 = systemd ExecMainStartTimestampMonotonic of cloud-final.service, plus /proc/stat btime, read on the node by coldstart-agent.sh. NOT systemd-analyze.",
+  "implication": "d34 (EC2 running -> t4) ends when cloud-final STARTS. The ParallelCluster cookbook (Chef/Cinc) runs inside cloud-final, so it falls in d45, not d34. No double counting and no recomputation needed.",
+  "systemd_analyze_use": "run once, as a diagnostic on parked job 14 (notes/2026-09-19-compute-node-boot-anatomy.md). It gives multi-user.target = 3m20s, which includes cloud-final/Chef. It was never used as t4.",
+  "caveats": [
+   "btime is integer seconds, so t4 is accurate to about 1 s",
+   "d34 also includes the hypervisor/firmware time between EC2 'running' and kernel start"
+  ]
+ },
+ "dates_utc": "see cell_dates.csv. Smoke tests JobIds 1-3 on 2026-09-19 20:22-21:02Z; diagnostic JobId 14 23:06-23:22Z; cells 2026-09-19 to 2026-09-20",
+ "software": {
+  "parallelcluster": "3.16.1 (`pcluster version` output in the Kiro session; describe-cluster 'version': '3.16.1')",
+  "slurm": "25.11.8 (slurmctld.log: 'slurmctld version 25.11.8 started')",
+  "cinc_client": "19.3.14 (chef-client.log)",
+  "kernel": "6.12.103-127.188.amzn2023 (on node, and in the slurm_resume boto user-agent)",
+  "os": "Image.Os: alinux2023, default ParallelCluster AMI (no CustomAmi)"
+ },
+ "ami_id": {
+  "answer": "ami-05e09ce5fe655ed86 (us-west-2), the same for every node in the released cells",
+  "source": "IMDS ami-id recorded by the node agent",
+  "note": "the AMI name was not recorded; `aws ec2 describe-images` would confirm it"
+ },
+ "scontrol_show_config": "only a grep'd subset was captured: see scontrol_show_config_excerpt.txt. The full output was never saved. Saved static configs: data/pc/headnode-logs/opt/slurm/etc/",
+ "submit_command": {
+  "command": "sbatch --parsable  (job script on stdin, issued by harness/coldstart/driver.py)",
+  "job_script": "#!/bin/bash\n#SBATCH --job-name=coldstart-{cell}\n#SBATCH --comment=coldstart:{cell}:{rep}\n#SBATCH --nodes={nodes}\n#SBATCH --ntasks-per-node=1\n#SBATCH --time=00:10:00\n#SBATCH --output={out}/job-%j.out\nsrun hostname\nsleep {job_sleep}\n",
+  "invocation": "./run_cell.sh <cell> c7i <nodes> <repeats> [driver args]. Before each rep, driver waits until every node in the partition is powered down (sinfo every 5 s), submits, waits until the job leaves squeue (every 2 s), then sleeps `cooldown` s"
+ },
+ "warm_start": {
+  "answer": "Nothing special kept the node up. The warm cell ran immediately after the last 4-node repeat with --skip-powerdown-wait --cooldown 5, inside the SuspendTime=180 s idle window.",
+  "evidence": [
+   "slurmctld.log: JobId=24 (4n rep 9) done 01:03:36.382Z; JobId=25 (warm rep 0) submitted 01:03:59.906Z, allocated to c7i-dy-c7i-large-1 with no resume",
+   "warm jobs 25-29 run back to back about 37 s apart (30 s job + 5 s cooldown), so the node is never idle for 180 s",
+   "warm timelines rows point to instance launched by JobID 24 (agent_files.csv)"
+  ],
+  "correction": "An earlier answer said JobID 14 hosted the warm cell. That was wrong: JobID 14 was the diagnostic job parked for systemd-analyze and killed at 23:22:51Z"
+ },
+ "chrony": {
+  "answer": "one reading, head node only: System time 2 ns slow, RMS offset 4.3 us, source Amazon Time Sync 169.254.169.123 (chronyc_tracking_headnode.txt)",
+  "gaps": [
+   "no compute-node chrony readings",
+   "no per-cell readings",
+   "cross-host comparisons (poller/CloudTrail/EventBridge on one side, node agent on the other) therefore rest on the AL2023 default chrony config, not on a measurement"
+  ],
+  "indirect_check": "Across all 113 cold rows, head-node poller t5 minus node-agent slurmd_active (node clock) = +0.38 to +2.08 s, median +1.09 s. It is always positive, which fits slurmd startup plus the registration RPC plus the 1 s poll. A node clock running ahead by more than ~0.4 s would push some rows negative. So this bounds skew loosely; it does not measure it."
+ },
+ "t0_source": {
+  "summary": "No cell got t0 from Slurm accounting. There is no slurmdbd (AccountingStorageType=(null)), and `sacct` failed for every job (15 'command failed: sacct' warnings in phase4-remaining.log). pilot-c7i-4n and warm-c7i-1n got t0 from `scontrol show job -o` EligibleTime, through the poller's fallback. pilot-c7i-1n ran before that fallback existed, so merge.py synthesized t0 from the squeue submit time. In all three cells t0 is the Slurm submit time truncated to whole seconds (EligibleTime == SubmitTime for every scontrol record).",
+  "per_cell": {
+   "pilot-c7i-1n": {
+    "command": "squeue -h -o '%i|%T|%r|%D|%N|%V|%S'  (poller, every 1 s while the job is in squeue)",
+    "field": "%V = SubmitTime -> job_state.submit in poller.jsonl -> merge.py sets eligible := submit",
+    "resolution": "1 s (Slurm prints YYYY-MM-DDTHH:MM:SS, truncated)",
+    "why_flagged": "poller.jsonl has 0 job_acct events. The scontrol fallback was written after this cell finished (job 13 ended 23:02:34Z) and before pilot-c7i-4n started (23:39:10Z); see the Kiro session 2026-09-19 and the 09-20 checkpoint caveat",
+    "note": "acct_synthesized_from_squeue"
+   },
+   "pilot-c7i-4n": {
+    "command": "sacct -P -n -X -o JobID,Submit,Eligible,Start,End,State,NNodes,NodeList -j <id>  -> fails (no slurmdbd)  -> scontrol show job <id> -o",
+    "field": "EligibleTime (scontrol) -> job_acct.eligible in poller.jsonl -> Timeline.t0",
+    "resolution": "1 s (truncated)",
+    "fetched": "by the poller 5 s or more after the job leaves squeue, inside MinJobAge=300 s. 10/10 jobs have a job_acct record",
+    "note": "not flagged, but it is still not accounting data: job_acct events are written with source='poller' whether they came from sacct or scontrol, and sacct never succeeded"
+   },
+   "warm-c7i-1n": {
+    "command": "same as pilot-c7i-4n (sacct fails -> scontrol show job -o)",
+    "field": "EligibleTime",
+    "resolution": "1 s (truncated)",
+    "fetched": "5/5 jobs have a job_acct record"
+   }
+  },
+  "code": {
+   "harness/coldstart/poller.py:50-59 sacct_for": "out = _run([\"sacct\", \"-P\", \"-n\", \"-X\", \"-o\", SACCT_FMT, \"-j\", \",\".join(job_ids)])\nif out.strip() and \"accounting storage is disabled\" not in out.lower():\n    return parse_sacct(out, tz)\nreturn [ja for jid in job_ids for ja in scontrol_job(jid, tz)]",
+   "harness/coldstart/poller.py:62-86 scontrol_job": "out = _run([\"scontrol\", \"show\", \"job\", job_id, \"-o\"])\n...\neligible=parse_slurm_time(kv.get(\"EligibleTime\", \"\"), tz),",
+   "harness/coldstart/poller.py:36 SQUEUE_CMD": "[\"squeue\", \"-h\", \"-o\", \"%i|%T|%r|%D|%N|%V|%S\"]",
+   "harness/coldstart/merge.py:185-199 synthesis (pilot-c7i-1n path)": "for jid, sts in job_states.items():\n    if jid in jobs:\n        continue\n    last = sts[-1].extra\n    if not last.get(\"nodes\"):\n        continue\n    submit = last.get(\"submit\") or sts[0].ts\n    jobs[jid] = Event(kind=JOB_ACCT, source=\"poller\", ts=sts[-1].ts, extra={\n        \"job_id\": jid, \"submit\": submit, \"eligible\": submit, ...\n        \"state\": \"SYNTH\", ...})",
+   "harness/coldstart/merge.py:209-212 t0 assignment (all cells)": "tl = Timeline(job_id=job_id, node=node, num_nodes=x.get(\"num_nodes\"), cell=cell,\n              t0=x.get(\"eligible\"))\nif x.get(\"state\") == \"SYNTH\":\n    tl.notes.append(\"acct_synthesized_from_squeue\")",
+   "harness/coldstart/slurm_parse.py:136-147 parse_slurm_time": "datetime.strptime(s, \"%Y-%m-%dT%H:%M:%S\") ... tz=None -> local time of the parsing host (head node, UTC)"
+  },
+  "vs_slurmctld_submit": {
+   "definition": "t0 minus the timestamp on the slurmctld.log line '_slurm_rpc_submit_batch_job: JobId=<id>' (millisecond resolution)",
+   "one_job_per_cell": {
+    "pilot-c7i-1n JobId=9": {
+     "slurmctld": "2026-09-19T22:21:12.207Z",
+     "t0": "2026-09-19T22:21:12Z",
+     "diff_s": -0.207
+    },
+    "pilot-c7i-4n JobId=15": {
+     "slurmctld": "2026-09-19T23:39:10.486Z",
+     "t0": "2026-09-19T23:39:10Z",
+     "diff_s": -0.486
+    },
+    "warm-c7i-1n JobId=25": {
+     "slurmctld": "2026-09-20T01:03:59.906Z",
+     "t0": "2026-09-20T01:03:59Z",
+     "diff_s": -0.906
+    }
+   },
+   "all_jobs": {
+    "pilot-c7i-1n": {
+     "4": -0.314,
+     "5": -0.785,
+     "6": -0.203,
+     "7": -0.512,
+     "8": -0.841,
+     "9": -0.207,
+     "10": -0.58,
+     "11": -0.805,
+     "12": -0.09,
+     "13": -0.839
+    },
+    "pilot-c7i-4n": {
+     "15": -0.486,
+     "16": -0.584,
+     "17": -0.794,
+     "18": -0.886,
+     "19": -0.395,
+     "20": -0.675,
+     "21": -0.019,
+     "22": -0.319,
+     "23": -0.634,
+     "24": -0.023
+    },
+    "warm-c7i-1n": {
+     "25": -0.906,
+     "26": -0.264,
+     "27": -0.489,
+     "28": -0.677,
+     "29": -0.985
+    }
+   },
+   "range_s": [
+    -0.985,
+    -0.019
+   ],
+   "mean_s": -0.532,
+   "interpretation": "Every difference falls in (-1, 0], which is exactly what truncating to whole seconds produces. That confirms t0 is the submit time parsed in the right timezone, with no offset. Effect: t0 is about 0.5 s early on average (at most 1 s), so d01 and total are overstated by about 0.5 s. 'Eligible' here equals submit: none of these jobs had dependencies or --begin."
+  }
+ }
+}

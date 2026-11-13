@@ -1,0 +1,16 @@
+# Verbatim from the Kiro session (user-pasted terminal), coldstart-pc HEAD NODE, 2026-09-19 ~20:20Z, before any cell.
+# This is the ONLY chrony measurement taken. Compute nodes were never checked, and no per-cell offsets were recorded.
+$ chronyc tracking
+Reference ID    : A9FEA97B (169.254.169.123)
+Stratum         : 4
+Ref time (UTC)  : Sat Sep 19 20:20:01 2026
+System time     : 0.000000002 seconds slow of NTP time
+Last offset     : +0.000003219 seconds
+RMS offset      : 0.000004318 seconds
+Frequency       : 7.207 ppm slow
+Residual freq   : +0.002 ppm
+Skew            : 0.079 ppm
+Root delay      : 0.000374596 seconds
+Root dispersion : 0.000243530 seconds
+Update interval : 16.2 seconds
+Leap status     : Normal

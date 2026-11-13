@@ -1,0 +1,4 @@
+cell,cluster,jobs_attempted,jobs_completed,jobs_in_timelines,node_rows,rows_flagged,flag_values,rows_excluded_by_analyze_default,rows_excluded_in_reported_summary,rows_analyzed_total_metric,independent_samples_for_total,note
+pilot-c7i-1n,pc,10,10,10,10,10,acct_synthesized_from_squeue,10,0,10,10,
+pilot-c7i-4n,pc,10,10,10,40,0,,0,0,40,10,
+warm-c7i-1n,pc,5,5,5,5,5,no_powering_up_seen:warm_node_or_missed;nonmonotonic:t0>t2,5,5,5,0,not a cold start (warm baseline)
