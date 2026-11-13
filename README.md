@@ -1,5 +1,7 @@
 # Slurm cloud cold-start timing data
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24183295.svg)](https://doi.org/10.5281/zenodo.24183295)
+
 Anonymized timing data and code for the paper
 *"Measuring and Attributing Provisioning Delay in Elastic Cloud Slurm Clusters: An Empirical Case Study"*
 (Vadivel, Rijhwani, Varakala).
@@ -85,6 +87,12 @@ identifiers was not saved.
 
 The measurement harness (poller, node agent, experiment driver and merge pipeline) is not part of
 this release; it is available from the authors on request.
+
+## Citation
+
+Please cite the paper and this dataset: S. Vadivel, S. Rijhwani, and S. Varakala, *Data and analysis for:
+Measuring and Attributing Provisioning Delay in Elastic Cloud Slurm Clusters*, Zenodo, v1.0.0, 2026.
+DOI: [10.5281/zenodo.24183295](https://doi.org/10.5281/zenodo.24183295).
 
 ## License
 
