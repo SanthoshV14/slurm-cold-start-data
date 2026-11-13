@@ -1,0 +1,13 @@
+{
+  "title": "Data and analysis for: Measuring and Attributing Provisioning Delay in Elastic Cloud Slurm Clusters",
+  "upload_type": "dataset",
+  "description": "Anonymized timing data and an analysis script for the paper \"Measuring and Attributing Provisioning Delay in Elastic Cloud Slurm Clusters: An Empirical Case Study\". The data cover 25 Slurm jobs (10 single-node and 10 four-node cold starts, 5 warm starts; 55 job-node timelines) on AWS ParallelCluster 3.16.1 with Slurm 25.11.8 and c7i.large instances in us-west-2a, with eight timeline boundaries per job and node, per-phase statistics, run accounting, controller-log cross-checks, and one complete anonymized trace. The included script analysis/paper_tables.py reproduces the paper's phase statistics. Data: CC BY 4.0. Code: MIT.",
+  "creators": [
+    {"name": "Vadivel, Santhosh"},
+    {"name": "Rijhwani, Sagar"},
+    {"name": "Varakala, Sowmya"}
+  ],
+  "license": "cc-by-4.0",
+  "keywords": ["Slurm", "cloud HPC", "cold start", "AWS ParallelCluster", "provisioning latency"],
+  "version": "1.0.0"
+}
