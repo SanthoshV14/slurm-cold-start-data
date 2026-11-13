@@ -68,6 +68,9 @@ Phase columns: `d_alloc1` = t1→t2 (paper), `d12` = t2→t3, `d23` = t3→t4, `
 - Warm-start rows reuse the launch timestamps of the node started for the last pilot-c7i-4n job
   (flagged `nonmonotonic`); only their `total` is meaningful.
 - Compute-node clock offsets were not measured; see `data/facts.json` (`chrony`).
+- `pilot-c7i-1n` ran an earlier version of the node agent (systemd `oneshot` unit; `simple` in the later
+  cells). The agent is installed through ParallelCluster's `OnNodeStart` hook, so its own installation
+  time falls inside the configuration phase (`d45`).
 
 ## Anonymization
 
